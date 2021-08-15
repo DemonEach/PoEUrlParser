@@ -19,6 +19,21 @@ class PoeSprider(scrapy.Spider):
     ignored_langs = ['/ru', '/de', '/es', '/fr']
     visited_links = set()
 
+    def spider_closed(self, spider):
+        print(f"SPIDER FINISHED, FOUND {len(self.visited_links)} URLS")
+        with open(f"poe_wiki.txt", "w") as f:
+            for visited_link in self.visited_links:
+                print(visited_link.strip(), file=f)
+
+    def spider_opened(self, spider):
+        print(f"{GREEN}SPIDER STARTED{RESET}")
+
+    def closed(self, reason):
+        print(f"SPIDER FINISHED, FOUND {len(self.visited_links)} URLS")
+        with open(f"poe_wiki.txt", "w") as f:
+            for visited_link in self.visited_links:
+                print(visited_link.strip(), file=f)
+
     def parse(self, response, **kwargs):
         # for title in response.css('.title'):
         #     print(f"{GREEN}GOING TO: {title}{RESET}")
@@ -35,11 +50,11 @@ class PoeSprider(scrapy.Spider):
                     print(f"{YELLOW}NEXT PAGE IS: {next_page.attrib['href']}{RESET}")
                     if self.check_for_duplicates(ref):
                         # ignore parsing from ignored_langs
-                        if not ref.lower().startswith(tuple(self.ignored_langs)):
-                            if domain == '':
-                                self.visited_links.add('pathofexile.fandom.com' + ref)
-                            else:
-                                self.visited_links.add(ref)
+                        # if not ref.lower().startswith(tuple(self.ignored_langs)):
+                        if domain == '':
+                            self.visited_links.add('https://pathofexile.fandom.com' + ref)
+                        else:
+                            self.visited_links.add(ref)
             except:
                 pass
 
