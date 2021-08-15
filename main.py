@@ -117,3 +117,13 @@ if __name__ == "__main__":
 
     domain = urlparse('/foo/bar').netloc
     print(domain == '')  # --> www.example.test
+
+    # test2
+
+    ignored_langs = ['/ru', '/de', '/es', '/fr']
+
+    urls = ['/ru/wiki', '/de/wiki', '/es/wiki', '/fr/wiki', '/wiki', '/test']
+
+    for url in urls:
+        if url.lower().startswith(tuple(ignored_langs)):
+            print(f"START WITH URL: {url}")
