@@ -21,12 +21,6 @@ class PoeSprider(scrapy.Spider):
 
     def spider_closed(self, spider):
         print(f"SPIDER FINISHED, FOUND {len(self.visited_links)} URLS")
-        with open(f"poe_wiki.txt", "w") as f:
-            for visited_link in self.visited_links:
-                print(visited_link.strip(), file=f)
-
-    def spider_opened(self, spider):
-        print(f"{GREEN}SPIDER STARTED{RESET}")
 
     def closed(self, reason):
         print(f"SPIDER FINISHED, FOUND {len(self.visited_links)} URLS")
@@ -62,9 +56,11 @@ class PoeSprider(scrapy.Spider):
             if not ref.lower().startswith(tuple(self.ignored_langs)):
                 yield response.follow(next_page, self.parse)
 
-            with open(f"poe_wiki.txt", "w") as f:
-                for visited_link in self.visited_links:
-                    print(visited_link.strip(), file=f)
+            # with open(f"poe_wiki.txt", "w") as f:
+            #     for visited_link in self.visited_links:
+            #         print(visited_link.strip(), file=f)
+
+
 
     def check_for_duplicates(self, ref):
         return ref not in self.visited_links
