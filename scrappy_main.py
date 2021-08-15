@@ -16,6 +16,7 @@ class PoeSprider(scrapy.Spider):
     name = 'arakali'
     start_urls = ['https://pathofexile.fandom.com/wiki/Path_of_Exile_Wiki']
     allowed_domains = ['pathofexile.fandom.com', 'static.wikia.nocookie.net', '']
+    ignored_langs = ['/ru', '/de', '/es', '/fr']
     visited_links = set()
 
     def parse(self, response, **kwargs):
@@ -25,27 +26,30 @@ class PoeSprider(scrapy.Spider):
 
         for next_page in response.css('a'):
             # print(f"{next_page}")
+            ref = ''
+
             try:
                 ref = next_page.attrib['href']
-                if self.domain_check(ref):
-                    is_good_domain, domain = self.check_for_duplicates(ref)
-                    if is_good_domain:
-                        print(f"{YELLOW}NEXT PAGE IS: {next_page.attrib['href']}{RESET}")
-                        if domain == '':
-                            self.visited_links.add('pathofexile.fandom.com' + ref)
-                        else:
-                            self.visited_links.add(ref)
+                is_good_domain, domain = self.domain_check(ref)
+                if is_good_domain:
+                    print(f"{YELLOW}NEXT PAGE IS: {next_page.attrib['href']}{RESET}")
+                    if self.check_for_duplicates(ref):
+                        # ignore parsing from ignored_langs
+                        if not ref.lower().startswith(tuple(self.ignored_langs)):
+                            if domain == '':
+                                self.visited_links.add('pathofexile.fandom.com' + ref)
+                            else:
+                                self.visited_links.add(ref)
             except:
                 pass
 
-            yield response.follow(next_page, self.parse)
+            # ignore parsing from ignored_langs
+            if not ref.lower().startswith(tuple(self.ignored_langs)):
+                yield response.follow(next_page, self.parse)
 
-        # for img_url in response.css('img'):
-        #     print(f"{RED}ImgUrl: {img_url.attrib['src']} {RESET}")
-
-        with open(f"poe_wiki.txt", "w") as f:
-            for visited_link in self.visited_links:
-                print(visited_link.strip(), file=f)
+            with open(f"poe_wiki.txt", "w") as f:
+                for visited_link in self.visited_links:
+                    print(visited_link.strip(), file=f)
 
     def check_for_duplicates(self, ref):
         return ref not in self.visited_links
